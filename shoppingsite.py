@@ -16,7 +16,7 @@ import melons
 app = Flask(__name__)
 
 # A secret key is needed to use Flask sessioning features
-app.secret_key =  b'_5#y2L"F4Q8z\n\xec]/'
+app.secret_key =  '_5#y2L"F4Q8z\n\xec]/'
 
 # Normally, if you refer to an undefined variable in a Jinja template,
 # Jinja silently ignores this. This makes debugging difficult, so we'll
@@ -80,11 +80,26 @@ def show_shopping_cart():
     # Make sure your function can also handle the case wherein no cart has
     # been added to the session
 
- 
+    order_total = 0
+
+    cart_melons = []
+
+    cart = session.get("cart", {})
+
+    for melon_id, quantity in cart.items():
+        melon = melons.get_by_id(melon_id)
+        total_cost = quantity * melon.price
+        order_total += total_cost
+
+        melon.quantity = quantity
+        melon.total_cost = total_cost
+        cart_melons.append(melon)
+    
+    return render_template("cart.html",
+                           cart=cart_melons,
+                           order_total=order_total)
 
 
-
-    return render_template("cart.html")
 
 
 @app.route("/add_to_cart/<melon_id>")
@@ -117,8 +132,6 @@ def add_to_cart(melon_id):
     flash("Melon was added to the cart")
 
     return redirect("/cart")
-
-
     
 
 
